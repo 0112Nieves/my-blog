@@ -1,0 +1,46 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+// 獲取所有文章
+const allPosts = Object.values(
+    import.meta.glob<{
+        url: string;
+        frontmatter: { title: string; tags: string[] };
+    }>("../posts/*.md", { eager: true }),
+);
+// 獲取所有標籤(去除重複的)
+const uniqueTags = [
+    ...new Set(allPosts.flatMap((post) => post.frontmatter.tags || [])),
+];
+const pageTitle = "標籤索引頁";
+---
+
+<BaseLayout pageTitle={pageTitle}>
+    <div class="tags">
+        {
+            uniqueTags.map((tag) => (
+                <p class="tag">
+                    <a href={`/tags/${tag}`}>{tag}</a>
+                </p>
+            ))
+        }
+    </div>
+</BaseLayout>
+<style>
+  a {
+    color: #00539F;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    margin: 0.25em;
+    border: dotted 1px #a1a1a1;
+    border-radius: .5em;
+    padding: .5em 1em;
+    font-size: 1.15em;
+    background-color: #F8FCFD;
+  }
+</style>

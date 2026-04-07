@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogPost from '../../components/BlogPost.astro';
+
+// 在頁面初次加載時執行，返回 [{'標籤1': 包含標籤1的文章}, {'標籤2': 包含標籤2的文章}, ...]
+export async function getStaticPaths() {
+    // 1. 獲取所有文章
+    const allPosts = Object.values(import.meta.glob<{ url: string, frontmatter: { title: string, tags: string[] } }>('../posts/*.md', { eager: true }));
+    // 2. 獲取所有標籤 (不重複的)
+    const allTags = allPosts.flatMap((post) => post.frontmatter.tags);
+    const uniqueTags = [...new Set(allTags)];
+    // 3. 獲取標籤對應的文章
+    return uniqueTags.map((tag) => {
+        const filteredPosts = allPosts.filter((post) => post.frontmatter.tags?.includes(tag));
+        return {
+            params: { tag },
+            props: { posts: filteredPosts }
+        };
+    });
+}
+
+// 1. 獲取要查看的標籤
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+---
+<BaseLayout pageTitle={tag}>
+  <p>Posts tagged with {tag}</p>
+  <ul>
+    {
+        posts.map(post => <BlogPost url={post.url} title={post.frontmatter.title} />)
+    }
+  </ul>
+</BaseLayout>
